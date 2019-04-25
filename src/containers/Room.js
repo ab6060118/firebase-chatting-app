@@ -12,13 +12,11 @@ const styles = theme => ({
 
 class Room extends React.Component {
   render() {
-    let { match } = this.props
-
-    console.log(match.params);
+    let { id } = this.props.match.params
 
     return (
       <div>
-        Chatting room
+        Chatting with {id}
       </div>
     )
   }

@@ -2,14 +2,10 @@ import React from 'react';
 import { Switch, Route } from "react-router-dom";
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
 import firebase, { db } from '../libs/Firebase'
 
 import Room from './Room'
+import User from '../components/User'
 
 const drawerWidth = 220
 
@@ -34,10 +30,17 @@ class Chat extends React.Component {
     }
 
     this.fetchUser = this.fetchUser.bind(this)
+    this.handleUserClick = this.handleUserClick.bind(this)
   }
 
   componentDidMount() {
     this.fetchUser()
+  }
+
+  handleUserClick(uid) {
+    let { history } = this.props
+
+    history.push(`/chat/${uid}`)
   }
 
   async fetchUser() {
@@ -54,18 +57,14 @@ class Chat extends React.Component {
 
   render() {
     let { classes } = this.props
-
-    console.log(this.state);
+		let { users } = this.state
 
     return (
       <>
         <div className={classes.drawer}>
           <List>
-            {['Chatting room', 'Setting'].map((text, index) => (
-              <ListItem button key={text}>
-                <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItem>
+            {users.map((user, index) => (
+              <User key={user.uid} {...user} onClick={this.handleUserClick}/>
             ))}
           </List>
         </div>
