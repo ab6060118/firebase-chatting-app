@@ -1,18 +1,29 @@
-import React from 'react';
+import './Home.css'
+
 import { Switch, Route, Redirect } from "react-router-dom";
+import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
 import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
+import Avatar from '@material-ui/core/Avatar';
+import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
-import Avatar from '@material-ui/core/Avatar';
+import * as React from 'react';
+import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { connect } from 'react-redux'
 
-import './Home.css'
-import firebase from '../libs/Firebase'
+import Drawer from '@material-ui/core/Drawer';
+import List from '@material-ui/core/List';
+import Divider from '@material-ui/core/Divider';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
+import InboxIcon from '@material-ui/icons/MoveToInbox';
+import MailIcon from '@material-ui/icons/Mail';
+
 import Chat from './Chat'
+import Users from './Users'
+import firebase from '../libs/Firebase'
 
 const styles = theme => ({
   appBar: {
@@ -28,11 +39,38 @@ const styles = theme => ({
 })
 
 class Home extends React.Component {
-  componentDidMount() {
-    console.log(this.props);
+  constructor() {
+    super()
+
+    this.state = {
+      isMenuOpend: false,
+    }
+
+    this.handlerMenuItemClick = this.handlerMenuItemClick.bind(this)
+    this.toggleDrawer = this.toggleDrawer.bind(this)
+    this.goPage = this.goPage.bind(this)
+  }
+
+  handlerMenuItemClick(e) {
+    this.goPage(e.currentTarget.dataset.path)
+  }
+
+  goPage(path) {
+    let { history } = this.props
+
+    console.log(path);
+
+    history.push(`/${path}`)
+  }
+
+  toggleDrawer(open) {
+    let { isMenuOpend } = this.state
+
+    this.setState({ isMenuOpend: !isMenuOpend })
   }
 
   render() {
+    let { isMenuOpend } = this.state
     let { classes } = this.props
     let { photoURL } = firebase.auth().currentUser
 
@@ -40,7 +78,7 @@ class Home extends React.Component {
       <div className="home">
         <AppBar position="fixed" className={classes.appBar}>
           <Toolbar>
-            <IconButton className={classes.menuButton} color="inherit" aria-label="Menu">
+            <IconButton className={classes.menuButton} color="inherit" aria-label="Menu" onClick={this.toggleDrawer}>
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" color="inherit" className={classes.appBarText}>Test</Typography>
@@ -49,9 +87,22 @@ class Home extends React.Component {
           </Toolbar>
         </AppBar>
         <div className={classes.toolbar}></div>
+        <Drawer open={isMenuOpend} onClose={this.toggleDrawer}>
+          <div onClick={this.toggleDrawer}>
+            <List>
+              {['Friends', 'Users', 'Setting'].map((text, index) => (
+                <ListItem data-path={text.toLowerCase()} button key={text} onClick={this.handlerMenuItemClick}>
+                  <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <MailIcon />}</ListItemIcon>
+                  <ListItemText primary={text} />
+                </ListItem>
+              ))}
+            </List>
+          </div>
+        </Drawer>
         <div className="body">
           <Switch>
             <Route path="/chat" component={Chat}/>
+            <Route path='/users' component={Users}/>
             <Redirect to="/chat" />
           </Switch>
         </div>

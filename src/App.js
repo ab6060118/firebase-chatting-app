@@ -11,7 +11,7 @@ import {
   withRouter
 } from "react-router-dom";
 
-// import { updateUser } from './actions/User'
+import { updateUser } from './actions/User'
 
 const PrivateRoute = ({ component: Component, ...rest  }) => {
   return (
@@ -27,7 +27,7 @@ const PrivateRoute = ({ component: Component, ...rest  }) => {
 
 class App extends React.Component {
   componentDidMount() {
-    let { history, /* updateUser */ } = this.props
+    let { history, updateUser } = this.props
 
     firebase.auth().onAuthStateChanged((user) => {
       if(user) {
@@ -42,11 +42,22 @@ class App extends React.Component {
             })
           }
         })
+        updateUser(user)
         history.push('/')
       }
       else {
         history.push('/login')
       }
+    })
+  }
+
+  async fetchUser() {
+    let usersSnap = await  db.collection('users').get()
+    let users = []
+
+    usersSnap.forEach(userSnap => {
+      let user = userSnap.data()
+      if(user.uid !== firebase.auth().currentUser.uid) users.push(user)
     })
   }
 
@@ -61,7 +72,7 @@ class App extends React.Component {
 }
 
 const mapDispatchToProps = (dispatch) => ({
-  // updateUser: (user) => dispatch(updateUser(user))
+  updateUser: (user) => dispatch(updateUser(user))
 })
 
 export default connect(undefined, mapDispatchToProps)(withRouter(App));

@@ -1,8 +1,8 @@
 import React from 'react';
 import { Switch, Route } from "react-router-dom";
+import { connect } from 'react-redux'
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
-import firebase, { db } from '../libs/Firebase'
 
 import Room from './Room'
 import User from '../components/User'
@@ -18,53 +18,30 @@ const styles = theme => ({
   drawerPaper: {
     flexGrow: 1,
     width: drawerWidth,
+  },
+  content: {
+    flexGrow: 1,
+    display: 'flex',
+    flexDirection: 'column',
   }
 })
 
 class Chat extends React.Component {
-  constructor() {
-    super()
-
-    this.state = { 
-      users: []
-    }
-
-    this.fetchUser = this.fetchUser.bind(this)
-    this.handleUserClick = this.handleUserClick.bind(this)
-  }
-
-  componentDidMount() {
-    this.fetchUser()
-  }
-
   handleUserClick(uid) {
     let { history } = this.props
 
     history.push(`/chat/${uid}`)
   }
 
-  async fetchUser() {
-    let usersSnap = await  db.collection('users').get()
-    let users = []
-
-    usersSnap.forEach(userSnap => {
-      let user = userSnap.data()
-      if(user.uid !== firebase.auth().currentUser.uid) users.push(user)
-    })
-
-    this.setState({users: users})
-  }
-
   render() {
-    let { classes } = this.props
-		let { users } = this.state
+    let { classes, friends } = this.props
 
     return (
       <>
         <div className={classes.drawer}>
           <List>
-            {users.map((user, index) => (
-              <User key={user.uid} {...user} onClick={this.handleUserClick}/>
+            {friends.map((friend, index) => (
+              <User key={friend.uid} {...friend} onClick={this.handleUserClick}/>
             ))}
           </List>
         </div>
@@ -78,4 +55,8 @@ class Chat extends React.Component {
   }
 }
 
-export default withStyles(styles)(Chat)
+const mapStateToProps = (state) => ({
+  friends: state.Friends.list
+})
+
+export default connect(mapStateToProps)(withStyles(styles)(Chat))
